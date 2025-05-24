@@ -1,14 +1,40 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
+use std::{
+    collections::BTreeMap,
+    sync::{Arc, Mutex},
+};
+
+pub struct Store {
+    memtable: Arc<Mutex<BTreeMap<String, String>>>,
+}
+
+impl Store {
+    pub fn new() -> Self {
+        Self {
+            memtable: Arc::new(Mutex::new(BTreeMap::new())),
+        }
+    }
+
+    pub async fn set(&self, key: String, value: String) -> Result<(), Box<dyn std::error::Error>> {
+        let mut memtable = self.memtable.lock().unwrap();
+        memtable.insert(key.clone(), value.clone());
+
+        Ok(())
+    }
+
+    pub async fn get(&self, key: String) -> Result<Option<String>, Box<dyn std::error::Error>> {
+        let memtable = self.memtable.lock().unwrap();
+        if let Some(value) = memtable.get(&key) {
+            return Ok(Some(value.clone()));
+        }
+
+        Ok(None)
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    // use super::*;
 
     #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+    fn it_works() {}
 }
