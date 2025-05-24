@@ -14,14 +14,14 @@ impl Store {
         }
     }
 
-    pub async fn set(&self, key: String, value: String) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn set(&self, key: &str, value: String) -> Result<(), Box<dyn std::error::Error>> {
         let mut memtable = self.memtable.lock().unwrap();
-        memtable.insert(key.clone(), value.clone());
+        memtable.insert(key.to_string(), value.clone());
 
         Ok(())
     }
 
-    pub async fn get(&self, key: String) -> Result<Option<String>, Box<dyn std::error::Error>> {
+    pub fn get(&self, key: String) -> Result<Option<String>, Box<dyn std::error::Error>> {
         let memtable = self.memtable.lock().unwrap();
         if let Some(value) = memtable.get(&key) {
             return Ok(Some(value.clone()));
@@ -33,8 +33,13 @@ impl Store {
 
 #[cfg(test)]
 mod tests {
-    // use super::*;
+    use super::*;
 
     #[test]
-    fn it_works() {}
+    fn it_works() {
+        let store = Store::new();
+        store.set("key", "value".to_string()).unwrap();
+        let value = store.get("key".to_string()).unwrap();
+        assert_eq!(value, Some("value".to_string()));
+    }
 }
